@@ -1,6 +1,6 @@
 # English 
 
-# [Lawn Care Field Operations Console]  
+# Lawn Care Field Operations Console
 Turn scattered messages and mental notes into a lightweight dispatch and execution system for small lawn care crews.
 
 ![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)
