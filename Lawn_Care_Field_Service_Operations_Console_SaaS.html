@@ -1,0 +1,984 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lawn Care Field Service Operations Console</title>
+  <style>
+    :root {
+      --color-primary: #051C2C;
+      --color-accent: #2251FF;
+      --color-bg: #F5F5F2;
+      --color-muted: #888888;
+      --color-body-text: #1A1A2E;
+      --color-positive: #00C853;
+      --color-negative: #D32F2F;
+      --color-surface: #FFFFFF;
+      --color-input-bg: #FFFDE7;
+      --color-border: #E8E8E6;
+      --nav-bg: #FFFFFF;
+      --nav-border: #E8E8E6;
+      --nav-text: #051C2C;
+      --nav-text-inactive: rgba(5, 28, 44, 0.45);
+      --table-header-bg: rgba(5, 28, 44, 0.04);
+      --table-header-sep: rgba(5, 28, 44, 0.12);
+      --insight-bg: rgba(34, 81, 255, 0.04);
+      --anomaly-bg: rgba(211, 47, 47, 0.04);
+      --accent-track: rgba(34, 81, 255, 0.10);
+      --font-heading: 'EB Garamond', Garamond, Georgia, serif;
+      --font-body: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans SC', 'Microsoft YaHei', sans-serif;
+      --text-page-title: 28px;
+      --text-section: 18px;
+      --text-kpi-value: 36px;
+      --text-table-head: 13px;
+      --text-body: 13px;
+      --text-label: 11px;
+      --tracking-display: -0.03em;
+      --tracking-heading: -0.02em;
+      --tracking-label: 0.06em;
+      --space-xs: 4px;
+      --space-sm: 8px;
+      --space-md: 16px;
+      --space-lg: 24px;
+      --space-xl: 40px;
+      --space-2xl: 64px;
+      --radius-sm: 6px;
+      --radius-md: 10px;
+      --radius-lg: 14px;
+      --radius-pill: 100px;
+      --shadow-sm: 0 1px 2px rgba(5, 28, 44, 0.04), 0 2px 8px rgba(5, 28, 44, 0.06);
+      --shadow-md: 0 2px 4px rgba(5, 28, 44, 0.04), 0 8px 24px rgba(5, 28, 44, 0.08), 0 1px 0 rgba(255,255,255,0.6) inset;
+      --shadow-lg: 0 4px 8px rgba(5, 28, 44, 0.06), 0 16px 48px rgba(5, 28, 44, 0.14), 0 1px 0 rgba(255,255,255,0.5) inset;
+      --shadow-nav: 0 1px 3px rgba(5, 28, 44, 0.06), 0 1px 0 rgba(5, 28, 44, 0.08);
+      --ease-standard: cubic-bezier(0.25, 0.46, 0.45, 0.94);
+      --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1.0);
+      --ease-decel: cubic-bezier(0.0, 0.0, 0.2, 1.0);
+      --dur-fast: 150ms;
+      --dur-normal: 250ms;
+      --dur-slow: 400ms;
+      --nav-height: 56px;
+      --row-height-body: 40px;
+      --row-height-header: 44px;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--color-bg);
+      color: var(--color-body-text);
+      font-family: var(--font-body);
+      font-size: var(--text-body);
+      line-height: 1.55;
+      min-height: 100vh;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      text-rendering: optimizeLegibility;
+    }
+
+    button, input, select, textarea { font: inherit; }
+    button { cursor: pointer; }
+
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      height: var(--nav-height);
+      background: var(--nav-bg);
+      border-bottom: 1px solid var(--nav-border);
+      box-shadow: var(--shadow-nav);
+    }
+
+    .nav-inner {
+      max-width: 1400px;
+      height: 100%;
+      margin: 0 auto;
+      padding: 0 var(--space-xl);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--space-lg);
+    }
+
+    .brand {
+      font-family: var(--font-heading);
+      font-size: 20px;
+      font-weight: 700;
+      letter-spacing: var(--tracking-heading);
+      color: var(--color-primary);
+      white-space: nowrap;
+    }
+
+    .tabs {
+      display: flex;
+      align-items: center;
+      gap: var(--space-xs);
+      height: 100%;
+      overflow-x: auto;
+    }
+
+    .tab-btn {
+      height: 100%;
+      border: 0;
+      border-bottom: 3px solid transparent;
+      background: transparent;
+      color: var(--nav-text-inactive);
+      padding: 0 14px;
+      font-weight: 600;
+      transition: color var(--dur-fast) var(--ease-standard), border-color var(--dur-fast) var(--ease-standard);
+      white-space: nowrap;
+    }
+
+    .tab-btn.active {
+      color: var(--nav-text);
+      border-bottom-color: var(--color-accent);
+    }
+
+    .page-wrapper {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 48px var(--space-xl) var(--space-2xl);
+    }
+
+    .view { display: none; }
+    .view.active {
+      display: block;
+      animation: fadeUp 220ms var(--ease-decel) both;
+    }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(12px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      gap: var(--space-lg);
+      margin-bottom: var(--space-xl);
+    }
+
+    .eyebrow {
+      color: var(--color-muted);
+      font-size: var(--text-label);
+      letter-spacing: var(--tracking-label);
+      text-transform: uppercase;
+      font-weight: 600;
+      margin-bottom: var(--space-xs);
+    }
+
+    h1, h2, h3 {
+      margin: 0;
+      color: var(--color-primary);
+      font-family: var(--font-heading);
+      letter-spacing: var(--tracking-heading);
+    }
+
+    h1 {
+      font-size: var(--text-page-title);
+      line-height: 1.05;
+      letter-spacing: var(--tracking-display);
+    }
+
+    .subtitle {
+      max-width: 780px;
+      margin: var(--space-sm) 0 0;
+      color: var(--color-muted);
+    }
+
+    .toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      flex-wrap: wrap;
+      gap: var(--space-sm);
+    }
+
+    .save-state {
+      color: var(--color-muted);
+      font-size: var(--text-label);
+      white-space: nowrap;
+      margin-right: var(--space-sm);
+    }
+
+    .btn {
+      border: 0;
+      border-radius: var(--radius-pill);
+      background: var(--color-surface);
+      color: var(--color-primary);
+      box-shadow: var(--shadow-sm);
+      padding: 8px 14px;
+      font-weight: 600;
+      transition: transform var(--dur-fast) var(--ease-standard), box-shadow var(--dur-fast) var(--ease-standard), filter var(--dur-fast) var(--ease-standard);
+    }
+
+    .btn:hover { transform: translateY(-1px); box-shadow: var(--shadow-md); }
+    .btn:active { transform: scale(0.97); }
+    .btn.primary { color: var(--color-accent); }
+    .file-input { display: none; }
+
+    .grid {
+      display: grid;
+      gap: var(--space-md);
+    }
+
+    .kpi-grid {
+      grid-template-columns: repeat(5, minmax(160px, 1fr));
+      margin-bottom: var(--space-xl);
+    }
+
+    .two-col {
+      grid-template-columns: minmax(0, 2fr) minmax(320px, 1fr);
+      align-items: start;
+    }
+
+    .card {
+      background: var(--color-surface);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-md);
+      padding: var(--space-lg);
+      transition: transform var(--dur-normal) var(--ease-spring), box-shadow var(--dur-normal) var(--ease-standard);
+    }
+
+    .card:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-lg);
+    }
+
+    .kpi-label {
+      color: var(--color-muted);
+      font-size: var(--text-label);
+      letter-spacing: var(--tracking-label);
+      text-transform: uppercase;
+      font-weight: 600;
+    }
+
+    .kpi-value {
+      margin-top: var(--space-xs);
+      font-family: var(--font-heading);
+      font-size: var(--text-kpi-value);
+      letter-spacing: var(--tracking-display);
+      line-height: 1;
+      color: var(--color-primary);
+      font-weight: 700;
+    }
+
+    .kpi-note {
+      margin-top: var(--space-xs);
+      color: var(--color-muted);
+      font-size: var(--text-label);
+    }
+
+    .kpi-value.accent { color: var(--color-accent); }
+    .kpi-note.anomaly-text { color: var(--color-negative); font-weight: 600; }
+
+    .section-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: var(--space-md);
+      margin-bottom: var(--space-md);
+    }
+
+    .section-title {
+      font-size: var(--text-section);
+      letter-spacing: var(--tracking-heading);
+    }
+
+    .section-actions { display: flex; gap: var(--space-sm); flex-wrap: wrap; }
+
+    .table-card {
+      background: var(--color-surface);
+      border-radius: var(--radius-md);
+      box-shadow: var(--shadow-md);
+      overflow: hidden;
+    }
+
+    .table-scroll { overflow-x: auto; }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 900px;
+    }
+
+    th {
+      height: var(--row-height-header);
+      background: var(--table-header-bg);
+      color: var(--color-primary);
+      border-bottom: 2px solid var(--table-header-sep);
+      font-size: var(--text-table-head);
+      letter-spacing: var(--tracking-label);
+      text-transform: uppercase;
+      font-weight: 600;
+      text-align: left;
+      padding: 0 12px;
+      white-space: nowrap;
+    }
+
+    td {
+      min-height: var(--row-height-body);
+      border-bottom: 1px solid var(--color-border);
+      padding: 8px 12px;
+      vertical-align: middle;
+      background: var(--color-surface);
+    }
+
+    tbody tr:nth-child(even) td { background: var(--color-bg); }
+    tr.anomaly-row td { background: var(--anomaly-bg); }
+    .num, th.num { text-align: right; }
+
+    input, select, textarea {
+      width: 100%;
+      border: 0;
+      border-radius: var(--radius-sm);
+      background: var(--color-input-bg);
+      color: var(--color-body-text);
+      padding: 8px 9px;
+      outline: none;
+      transition: box-shadow var(--dur-fast) var(--ease-standard), transform var(--dur-fast) var(--ease-standard);
+    }
+
+    textarea { resize: vertical; min-height: 36px; }
+    input:focus, select:focus, textarea:focus { box-shadow: 0 0 0 2px var(--color-accent); }
+    .readonly-cell { color: var(--color-primary); font-weight: 500; }
+    .muted { color: var(--color-muted); }
+
+    .status-pill {
+      border: 0;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 94px;
+      border-radius: var(--radius-pill);
+      padding: 5px 10px;
+      background: var(--table-header-bg);
+      color: var(--color-muted);
+      font-weight: 600;
+      transition: transform var(--dur-fast) var(--ease-standard), filter var(--dur-fast) var(--ease-standard);
+      user-select: none;
+    }
+
+    .status-pill.action { color: var(--color-negative); background: var(--anomaly-bg); }
+    .status-pill.complete { color: var(--color-primary); }
+    .status-pill.interactive:hover { transform: scale(1.04); filter: brightness(0.98); }
+
+    .databar {
+      position: relative;
+      min-width: 130px;
+      height: 28px;
+      border-radius: var(--radius-pill);
+      background: var(--accent-track);
+      overflow: hidden;
+      text-align: right;
+      padding: 5px 10px;
+      color: var(--color-primary);
+      font-weight: 600;
+    }
+
+    .databar::before {
+      content: "";
+      position: absolute;
+      inset: 0 auto 0 0;
+      width: var(--bar, 0%);
+      background: var(--color-accent);
+      opacity: 0.88;
+      transition: width var(--dur-normal) var(--ease-standard);
+    }
+
+    .databar span { position: relative; z-index: 1; color: var(--color-primary); }
+    .databar input {
+      position: relative;
+      z-index: 1;
+      text-align: right;
+    }
+
+    .insight-block {
+      border-left: 3px solid var(--color-accent);
+      background: var(--insight-bg);
+      border-radius: var(--radius-md);
+      padding: var(--space-md);
+      color: var(--color-primary);
+      margin-bottom: var(--space-md);
+    }
+
+    .insight-block strong {
+      display: block;
+      font-family: var(--font-heading);
+      font-size: 17px;
+      letter-spacing: var(--tracking-heading);
+      margin-bottom: 3px;
+    }
+
+    .progress-stack { display: grid; gap: var(--space-md); }
+    .progress-label {
+      display: flex;
+      justify-content: space-between;
+      color: var(--color-muted);
+      font-size: var(--text-label);
+      letter-spacing: var(--tracking-label);
+      text-transform: uppercase;
+      font-weight: 600;
+      margin-bottom: var(--space-xs);
+    }
+
+    .progress-track {
+      height: 14px;
+      border-radius: var(--radius-pill);
+      background: var(--accent-track);
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      height: 100%;
+      width: var(--progress, 0%);
+      border-radius: var(--radius-pill);
+      background: var(--color-accent);
+      transition: width var(--dur-normal) var(--ease-standard);
+    }
+
+    .mini-list {
+      display: grid;
+      gap: var(--space-sm);
+      margin-top: var(--space-md);
+    }
+
+    .mini-row {
+      display: flex;
+      justify-content: space-between;
+      gap: var(--space-md);
+      padding: 10px 0;
+      border-bottom: 1px solid var(--color-border);
+    }
+
+    .mini-row:last-child { border-bottom: 0; }
+    .empty-state {
+      padding: var(--space-xl);
+      color: var(--color-muted);
+      text-align: center;
+    }
+
+    .toast {
+      position: fixed;
+      right: var(--space-xl);
+      bottom: var(--space-xl);
+      z-index: 50;
+      border-radius: var(--radius-pill);
+      background: var(--color-surface);
+      color: var(--color-primary);
+      box-shadow: var(--shadow-lg);
+      padding: 10px 16px;
+      opacity: 0;
+      transform: translateY(12px);
+      pointer-events: none;
+      transition: opacity var(--dur-fast) var(--ease-standard), transform var(--dur-fast) var(--ease-standard);
+    }
+
+    .toast.show { opacity: 1; transform: translateY(0); }
+
+    @media (max-width: 980px) {
+      .page-header { align-items: flex-start; flex-direction: column; }
+      .toolbar { justify-content: flex-start; }
+      .kpi-grid, .two-col { grid-template-columns: 1fr; }
+      .nav-inner { padding: 0 var(--space-md); }
+      .page-wrapper { padding-left: var(--space-md); padding-right: var(--space-md); }
+      .brand { display: none; }
+      .tabs { width: 100%; }
+      .tab-btn { flex: 1 0 auto; }
+    }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="nav-inner">
+      <div class="brand">Lawn Care Console</div>
+      <nav class="tabs" aria-label="Workbook tabs">
+        <button class="tab-btn active" data-view="dashboard">Today Dashboard</button>
+        <button class="tab-btn" data-view="jobs">Job Execution</button>
+        <button class="tab-btn" data-view="customers">Customer Master</button>
+      </nav>
+    </div>
+  </header>
+
+  <main class="page-wrapper">
+    <div class="page-header">
+      <div>
+        <div class="eyebrow">3-person field service operations</div>
+        <h1>Lawn Care Field Service Operations Console</h1>
+        <p class="subtitle">A local-first SaaS-style version of the workbook. Customer records, dispatch execution, and dashboard formulas run in the browser and save automatically.</p>
+      </div>
+      <div class="toolbar">
+        <span class="save-state" id="lastSaved">Last saved: never</span>
+        <button class="btn primary" id="exportBtn">Export Backup</button>
+        <button class="btn" id="importBtn">Import Backup</button>
+        <button class="btn" id="resetBtn">Reset Data</button>
+        <input class="file-input" id="backupFile" type="file" accept="application/json">
+      </div>
+    </div>
+
+    <section class="view active" id="dashboardView">
+      <div class="grid kpi-grid" id="kpiGrid"></div>
+      <div class="grid two-col">
+        <div>
+          <div class="section-head">
+            <h2 class="section-title">Real-time Task Queue</h2>
+          </div>
+          <div id="dashboardInsight"></div>
+          <div class="table-card">
+            <div class="table-scroll">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Customer</th>
+                    <th>Service Address</th>
+                    <th>Assigned To</th>
+                    <th>Job Status</th>
+                    <th>Completion Time</th>
+                    <th>Field Notes / Exception</th>
+                    <th class="num">Amount</th>
+                  </tr>
+                </thead>
+                <tbody id="todayQueue"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+        <aside class="card">
+          <div class="section-head">
+            <h2 class="section-title">Daily Progress</h2>
+          </div>
+          <div class="progress-stack">
+            <div>
+              <div class="progress-label"><span>Completion Rate</span><span id="progressLabel">0%</span></div>
+              <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+            </div>
+            <div>
+              <div class="progress-label"><span>Revenue Coverage</span><span id="revenueLabel">$0</span></div>
+              <div class="progress-track"><div class="progress-fill" id="revenueFill"></div></div>
+            </div>
+          </div>
+          <div class="mini-list" id="statusBreakdown"></div>
+        </aside>
+      </div>
+    </section>
+
+    <section class="view" id="jobsView">
+      <div class="section-head">
+        <h2 class="section-title">Daily Dispatch and Field Execution</h2>
+        <div class="section-actions">
+          <button class="btn primary" id="addJobBtn">Add Job</button>
+        </div>
+      </div>
+      <div class="insight-block">
+        <strong>Live Formula Logic</strong>
+        Customer name, address, service details, special notes, and default amount are calculated from Customer_ID immediately after every edit.
+      </div>
+      <div class="table-card">
+        <div class="table-scroll">
+          <table>
+            <thead>
+              <tr>
+                <th>Job ID</th>
+                <th>Job Date</th>
+                <th>Customer ID</th>
+                <th>Customer Name</th>
+                <th>Service Address</th>
+                <th>Service Details</th>
+                <th>Special Notes</th>
+                <th>Assigned To</th>
+                <th>Job Status</th>
+                <th>Completion Time</th>
+                <th>Field Notes / Exception</th>
+                <th class="num">Amount Collected</th>
+              </tr>
+            </thead>
+            <tbody id="jobsBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <section class="view" id="customersView">
+      <div class="section-head">
+        <h2 class="section-title">Customer Master</h2>
+        <div class="section-actions">
+          <button class="btn primary" id="addCustomerBtn">Add Customer</button>
+        </div>
+      </div>
+      <div class="insight-block">
+        <strong>Single Source of Truth</strong>
+        Active customer records feed the dispatch dropdown and all XLOOKUP-style fields in Job Execution.
+      </div>
+      <div class="table-card">
+        <div class="table-scroll">
+          <table>
+            <thead>
+              <tr>
+                <th>Customer ID</th>
+                <th>Customer Name</th>
+                <th>Service Address</th>
+                <th>Phone</th>
+                <th>Frequency</th>
+                <th class="num">Standard Rate</th>
+                <th>Default Service</th>
+                <th>Special Notes</th>
+                <th>Profile Status</th>
+              </tr>
+            </thead>
+            <tbody id="customersBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <div class="toast" id="toast"></div>
+
+  <script>
+    const STORAGE_KEY = 'lawnCareConsole.v1';
+    const STATUS = ['Pending', 'In Service', 'Completed', 'Skipped/Exception'];
+    const TEAM = ['Employee A', 'Employee B', 'Owner'];
+    const FREQUENCY = ['Weekly', 'Bi-weekly', 'Monthly', 'One-time'];
+    const PROFILE = ['Active', 'Inactive'];
+
+    const seed = {
+      customers: [
+        { customerId: 'C0001', customerName: 'Mr. Smith', serviceAddress: '128 Oak Ridge Lane', phone: '555-0101', frequency: 'Weekly', standardRate: 65, defaultService: 'Mow, Edge & Blow', specialNotes: 'Back gate code 1234. Dog in yard.', profileStatus: 'Active' },
+        { customerId: 'C0002', customerName: 'Ms. Johnson', serviceAddress: '44 Maple Court', phone: '555-0102', frequency: 'Bi-weekly', standardRate: 80, defaultService: 'Mow, Edge, Hedge Trim', specialNotes: 'Call before arrival.', profileStatus: 'Active' },
+        { customerId: 'C0003', customerName: 'Greenfield HOA', serviceAddress: '900 Greenfield Drive', phone: '555-0103', frequency: 'Weekly', standardRate: 145, defaultService: 'Common-area mowing and cleanup', specialNotes: 'Avoid sprinkler heads near entrance.', profileStatus: 'Active' },
+        { customerId: 'C0004', customerName: 'Mr. Garcia', serviceAddress: '72 Pine Street', phone: '555-0104', frequency: 'Monthly', standardRate: 95, defaultService: 'Mow, Edge & Weed Control', specialNotes: 'Side gate often locked.', profileStatus: 'Active' }
+      ],
+      jobs: [
+        { jobId: 'J-20260621-01', jobDate: todayISO(), customerId: 'C0001', assignedTo: 'Employee A', jobStatus: 'Completed', completionTime: '09:45', fieldNotes: 'Front and back completed.', amountOverride: '' },
+        { jobId: 'J-20260621-02', jobDate: todayISO(), customerId: 'C0002', assignedTo: 'Employee B', jobStatus: 'In Service', completionTime: '', fieldNotes: '', amountOverride: '' },
+        { jobId: 'J-20260621-03', jobDate: todayISO(), customerId: 'C0003', assignedTo: 'Owner', jobStatus: 'Pending', completionTime: '', fieldNotes: '', amountOverride: '' },
+        { jobId: 'J-20260621-04', jobDate: todayISO(), customerId: 'C0004', assignedTo: 'Employee A', jobStatus: 'Skipped/Exception', completionTime: '', fieldNotes: 'Gate locked; reschedule required.', amountOverride: '' }
+      ],
+      lastSaved: null
+    };
+
+    let state = loadState();
+
+    function todayISO() {
+      const d = new Date();
+      const offset = d.getTimezoneOffset();
+      return new Date(d.getTime() - offset * 60000).toISOString().slice(0, 10);
+    }
+
+    function deepClone(value) {
+      return JSON.parse(JSON.stringify(value));
+    }
+
+    function loadState() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (!raw) return deepClone(seed);
+        const parsed = JSON.parse(raw);
+        return { customers: parsed.customers || [], jobs: parsed.jobs || [], lastSaved: parsed.lastSaved || null };
+      } catch (error) {
+        return deepClone(seed);
+      }
+    }
+
+    function saveState() {
+      state.lastSaved = new Date().toISOString();
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+      updateLastSaved();
+    }
+
+    function updateLastSaved() {
+      const label = document.getElementById('lastSaved');
+      label.textContent = state.lastSaved ? `Last saved: ${new Date(state.lastSaved).toLocaleString()}` : 'Last saved: never';
+    }
+
+    function customerById(id) {
+      return state.customers.find(c => c.customerId === id) || null;
+    }
+
+    function calcJob(job) {
+      const customer = customerById(job.customerId);
+      const amount = job.amountOverride !== '' && job.amountOverride !== null && job.amountOverride !== undefined
+        ? Number(job.amountOverride)
+        : Number(customer?.standardRate || 0);
+      return {
+        ...job,
+        customerName: customer?.customerName || 'Not matched',
+        serviceAddress: customer?.serviceAddress || 'Not matched',
+        serviceDetails: customer?.defaultService || 'Not matched',
+        specialNotes: customer?.specialNotes || '',
+        amountCollected: Number.isFinite(amount) ? amount : 0
+      };
+    }
+
+    function todayJobs() {
+      return state.jobs.map(calcJob).filter(job => job.jobDate === todayISO());
+    }
+
+    function metrics() {
+      const jobs = todayJobs();
+      const completed = jobs.filter(j => j.jobStatus === 'Completed').length;
+      const exceptions = jobs.filter(j => j.jobStatus === 'Skipped/Exception').length;
+      const revenue = jobs.reduce((sum, j) => sum + j.amountCollected, 0);
+      const completionRate = jobs.length ? completed / jobs.length : 0;
+      return { total: jobs.length, completed, exceptions, completionRate, revenue, jobs };
+    }
+
+    function render() {
+      renderCustomers();
+      renderJobs();
+      renderDashboard();
+      updateLastSaved();
+    }
+
+    function renderDashboard() {
+      const m = metrics();
+      const kpis = [
+        ['Today Total Jobs', m.total, 'Scheduled for today', false],
+        ['Completed Jobs', m.completed, 'Field-confirmed completion', false],
+        ['Exception Jobs', m.exceptions, m.exceptions ? 'Action required' : 'No exception follow-up', m.exceptions > 0],
+        ['Completion Rate', `${Math.round(m.completionRate * 100)}%`, 'Completed / total jobs', false],
+        ['Estimated Revenue', money(m.revenue), 'Today scheduled revenue', false]
+      ];
+      document.getElementById('kpiGrid').innerHTML = kpis.map(([label, value, note, anomaly], index) => `
+        <article class="card ${anomaly ? 'anomaly-row' : ''}">
+          <div class="kpi-label">${escapeHTML(label)}</div>
+          <div class="kpi-value ${index === 4 ? 'accent' : ''}">${escapeHTML(String(value))}</div>
+          <div class="kpi-note ${anomaly ? 'anomaly-text' : ''}">${escapeHTML(note)}</div>
+        </article>
+      `).join('');
+
+      const queue = document.getElementById('todayQueue');
+      if (!m.jobs.length) {
+        queue.innerHTML = '<tr><td colspan="7" class="empty-state">No jobs scheduled today</td></tr>';
+      } else {
+        const maxAmount = Math.max(...m.jobs.map(j => j.amountCollected), 1);
+        queue.innerHTML = m.jobs.map(job => `
+          <tr class="${job.jobStatus === 'Skipped/Exception' ? 'anomaly-row' : ''}">
+            <td>${escapeHTML(job.customerName)}</td>
+            <td>${escapeHTML(job.serviceAddress)}</td>
+            <td>${escapeHTML(job.assignedTo)}</td>
+            <td>${statusBadge(job.jobStatus, true, job.jobId)}</td>
+            <td>${escapeHTML(job.completionTime || '—')}</td>
+            <td>${escapeHTML(job.fieldNotes || '—')}</td>
+            <td class="num"><div class="databar" style="--bar:${Math.round(job.amountCollected / maxAmount * 100)}%"><span>${money(job.amountCollected)}</span></div></td>
+          </tr>
+        `).join('');
+      }
+
+      document.getElementById('progressLabel').textContent = `${Math.round(m.completionRate * 100)}%`;
+      document.getElementById('progressFill').style.setProperty('--progress', `${Math.round(m.completionRate * 100)}%`);
+      const revenueMax = Math.max(m.revenue, ...m.jobs.map(j => j.amountCollected), 1);
+      document.getElementById('revenueLabel').textContent = money(m.revenue);
+      document.getElementById('revenueFill').style.setProperty('--progress', `${Math.min(100, Math.round(m.revenue / revenueMax * 100))}%`);
+
+      const counts = STATUS.map(status => [status, m.jobs.filter(j => j.jobStatus === status).length]);
+      document.getElementById('statusBreakdown').innerHTML = counts.map(([status, count]) => `
+        <div class="mini-row"><span>${statusBadge(status, false)}</span><strong>${count}</strong></div>
+      `).join('');
+      document.querySelectorAll('[data-cycle-status]').forEach(el => el.addEventListener('click', cycleStatus));
+
+      document.getElementById('dashboardInsight').innerHTML = m.exceptions
+        ? `<div class="insight-block"><strong>Exception Follow-up</strong>${m.exceptions} job${m.exceptions > 1 ? 's' : ''} require owner review today. Check field notes before rescheduling or calling the customer.</div>`
+        : `<div class="insight-block"><strong>Operating Signal</strong>Today has ${m.total} scheduled job${m.total === 1 ? '' : 's'} and no exception follow-up currently flagged.</div>`;
+    }
+
+    function renderJobs() {
+      const activeCustomers = state.customers.filter(c => c.profileStatus === 'Active');
+      const rows = state.jobs.map((job, index) => {
+        const calc = calcJob(job);
+        return `
+          <tr class="${calc.jobStatus === 'Skipped/Exception' ? 'anomaly-row' : ''}">
+            <td><input value="${escapeAttr(job.jobId)}" data-job="${index}" data-field="jobId"></td>
+            <td><input type="date" value="${escapeAttr(job.jobDate)}" data-job="${index}" data-field="jobDate"></td>
+            <td><select data-job="${index}" data-field="customerId">${options(activeCustomers.map(c => c.customerId), job.customerId)}</select></td>
+            <td class="readonly-cell">${escapeHTML(calc.customerName)}</td>
+            <td class="readonly-cell">${escapeHTML(calc.serviceAddress)}</td>
+            <td class="readonly-cell">${escapeHTML(calc.serviceDetails)}</td>
+            <td class="readonly-cell">${escapeHTML(calc.specialNotes || '—')}</td>
+            <td><select data-job="${index}" data-field="assignedTo">${options(TEAM, job.assignedTo)}</select></td>
+            <td><select data-job="${index}" data-field="jobStatus">${options(STATUS, job.jobStatus)}</select></td>
+            <td><input type="time" value="${escapeAttr(job.completionTime)}" data-job="${index}" data-field="completionTime"></td>
+            <td><textarea data-job="${index}" data-field="fieldNotes">${escapeHTML(job.fieldNotes || '')}</textarea></td>
+            <td class="num"><input type="number" step="0.01" value="${escapeAttr(job.amountOverride)}" placeholder="${money(calc.amountCollected)}" data-job="${index}" data-field="amountOverride"></td>
+          </tr>
+        `;
+      }).join('');
+      document.getElementById('jobsBody').innerHTML = rows || '<tr><td colspan="12" class="empty-state">No jobs yet</td></tr>';
+      document.querySelectorAll('[data-job]').forEach(el => el.addEventListener('change', updateJob));
+    }
+
+    function renderCustomers() {
+      const maxRate = Math.max(...state.customers.map(c => Number(c.standardRate || 0)), 1);
+      document.getElementById('customersBody').innerHTML = state.customers.map((customer, index) => `
+        <tr>
+          <td><input value="${escapeAttr(customer.customerId)}" data-customer="${index}" data-field="customerId"></td>
+          <td><input value="${escapeAttr(customer.customerName)}" data-customer="${index}" data-field="customerName"></td>
+          <td><input value="${escapeAttr(customer.serviceAddress)}" data-customer="${index}" data-field="serviceAddress"></td>
+          <td><input value="${escapeAttr(customer.phone)}" data-customer="${index}" data-field="phone"></td>
+          <td><select data-customer="${index}" data-field="frequency">${options(FREQUENCY, customer.frequency)}</select></td>
+          <td class="num"><div class="databar" style="--bar:${Math.round(Number(customer.standardRate || 0) / maxRate * 100)}%"><input type="number" step="0.01" value="${escapeAttr(customer.standardRate)}" data-customer="${index}" data-field="standardRate"></div></td>
+          <td><input value="${escapeAttr(customer.defaultService)}" data-customer="${index}" data-field="defaultService"></td>
+          <td><textarea data-customer="${index}" data-field="specialNotes">${escapeHTML(customer.specialNotes || '')}</textarea></td>
+          <td><select data-customer="${index}" data-field="profileStatus">${options(PROFILE, customer.profileStatus)}</select></td>
+        </tr>
+      `).join('');
+      document.querySelectorAll('[data-customer]').forEach(el => el.addEventListener('change', updateCustomer));
+    }
+
+    function updateCustomer(event) {
+      const index = Number(event.target.dataset.customer);
+      const field = event.target.dataset.field;
+      state.customers[index][field] = field === 'standardRate' ? Number(event.target.value || 0) : event.target.value;
+      saveState();
+      render();
+    }
+
+    function updateJob(event) {
+      const index = Number(event.target.dataset.job);
+      const field = event.target.dataset.field;
+      state.jobs[index][field] = event.target.value;
+      saveState();
+      render();
+    }
+
+    function cycleStatus(event) {
+      const jobId = event.currentTarget.dataset.cycleStatus;
+      const job = state.jobs.find(item => item.jobId === jobId);
+      if (!job) return;
+      const current = STATUS.indexOf(job.jobStatus);
+      job.jobStatus = STATUS[(current + 1) % STATUS.length];
+      if (job.jobStatus === 'Completed' && !job.completionTime) {
+        const now = new Date();
+        job.completionTime = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+      }
+      saveState();
+      render();
+    }
+
+    function addCustomer() {
+      const next = state.customers.length + 1;
+      state.customers.push({
+        customerId: `C${String(next).padStart(4, '0')}`,
+        customerName: '',
+        serviceAddress: '',
+        phone: '',
+        frequency: 'Weekly',
+        standardRate: 0,
+        defaultService: '',
+        specialNotes: '',
+        profileStatus: 'Active'
+      });
+      saveState();
+      render();
+      switchView('customers');
+    }
+
+    function addJob() {
+      const seq = state.jobs.length + 1;
+      const active = state.customers.find(c => c.profileStatus === 'Active');
+      state.jobs.push({
+        jobId: `J-${todayISO().replaceAll('-', '')}-${String(seq).padStart(2, '0')}`,
+        jobDate: todayISO(),
+        customerId: active?.customerId || '',
+        assignedTo: 'Employee A',
+        jobStatus: 'Pending',
+        completionTime: '',
+        fieldNotes: '',
+        amountOverride: ''
+      });
+      saveState();
+      render();
+      switchView('jobs');
+    }
+
+    function exportBackup() {
+      const blob = new Blob([JSON.stringify(state, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `lawn-care-console-backup-${todayISO()}.json`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+      showToast('Backup exported');
+    }
+
+    function importBackup(file) {
+      const reader = new FileReader();
+      reader.onload = () => {
+        try {
+          const imported = JSON.parse(reader.result);
+          if (!Array.isArray(imported.customers) || !Array.isArray(imported.jobs)) throw new Error('Invalid backup');
+          state = { customers: imported.customers, jobs: imported.jobs, lastSaved: new Date().toISOString() };
+          saveState();
+          render();
+          showToast('Backup imported');
+        } catch (error) {
+          showToast('Import failed: invalid backup file');
+        }
+      };
+      reader.readAsText(file);
+    }
+
+    function resetData() {
+      if (!confirm('Reset all local data to the built-in sample dataset?')) return;
+      state = deepClone(seed);
+      saveState();
+      render();
+      showToast('Data reset');
+    }
+
+    function switchView(name) {
+      document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.view === name));
+      document.querySelectorAll('.view').forEach(view => view.classList.remove('active'));
+      document.getElementById(`${name}View`).classList.add('active');
+    }
+
+    function statusBadge(status, interactive, jobId = '') {
+      const cls = status === 'Skipped/Exception' ? 'action' : status === 'Completed' ? 'complete' : '';
+      if (interactive && jobId) {
+        return `<button class="status-pill ${cls} interactive" data-cycle-status="${escapeAttr(jobId)}" title="Click to cycle status">${escapeHTML(status || 'Pending')}</button>`;
+      }
+      return `<span class="status-pill ${cls} ${interactive ? 'interactive' : ''}">${escapeHTML(status || 'Pending')}</span>`;
+    }
+
+    function options(list, selected) {
+      return list.map(item => `<option value="${escapeAttr(item)}" ${item === selected ? 'selected' : ''}>${escapeHTML(item)}</option>`).join('');
+    }
+
+    function money(value) {
+      return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(Number(value || 0));
+    }
+
+    function escapeHTML(value) {
+      return String(value ?? '').replace(/[&<>"']/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[char]));
+    }
+
+    function escapeAttr(value) {
+      return escapeHTML(value);
+    }
+
+    function showToast(message) {
+      const toast = document.getElementById('toast');
+      toast.textContent = message;
+      toast.classList.add('show');
+      clearTimeout(showToast.timer);
+      showToast.timer = setTimeout(() => toast.classList.remove('show'), 1800);
+    }
+
+    document.querySelectorAll('.tab-btn').forEach(btn => btn.addEventListener('click', () => switchView(btn.dataset.view)));
+    document.getElementById('addCustomerBtn').addEventListener('click', addCustomer);
+    document.getElementById('addJobBtn').addEventListener('click', addJob);
+    document.getElementById('exportBtn').addEventListener('click', exportBackup);
+    document.getElementById('importBtn').addEventListener('click', () => document.getElementById('backupFile').click());
+    document.getElementById('backupFile').addEventListener('change', event => {
+      const file = event.target.files[0];
+      if (file) importBackup(file);
+      event.target.value = '';
+    });
+    document.getElementById('resetBtn').addEventListener('click', resetData);
+
+    render();
+  </script>
+</body>
+</html>
